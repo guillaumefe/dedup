@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Déduplication de Liste</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f5f7fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  .container {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    padding: 24px;
+    width: 100%;
+    max-width: 600px;
+  }
+  h1 {
+    margin: 0 0 16px;
+    font-size: 24px;
+    text-align: center;
+    color: #333333;
+  }
+  .area {
+    display: flex;
+    gap: 16px;
+    flex-direction: column;
+  }
+  textarea {
+    width: 100%;
+    height: 150px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    resize: vertical;
+    font-size: 14px;
+  }
+  button {
+    padding: 12px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #007bff;
+    color: #ffffff;
+    transition: background 0.3s;
+  }
+  button:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+  }
+  button:hover:not(:disabled) {
+    background: #0056b3;
+  }
+  .output {
+    position: relative;
+  }
+  .output textarea {
+    background: #f0f0f0;
+  }
+  .copy-btn {
+    margin-top: 8px;
+    align-self: flex-end;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Déduplication de Liste</h1>
+    <div class="area">
+      <textarea id="input" placeholder="Collez votre liste ici..."></textarea>
+      <button id="dedupe">Dédupliquer</button>
+      <div class="output">
+        <textarea id="output" readonly placeholder="Liste dédupliquée..."></textarea>
+        <button id="copy" class="copy-btn" disabled>Copier</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    const inputEl = document.getElementById('input');
+    const outputEl = document.getElementById('output');
+    const dedupeBtn = document.getElementById('dedupe');
+    const copyBtn = document.getElementById('copy');
+    function save() {
+      localStorage.setItem('liste_input', inputEl.value);
+      localStorage.setItem('liste_output', outputEl.value);
+    }
+    function load() {
+      const inp = localStorage.getItem('liste_input') || '';
+      const out = localStorage.getItem('liste_output') || '';
+      inputEl.value = inp;
+      outputEl.value = out;
+      copyBtn.disabled = out.trim() === '';
+    }
+    function dedupe() {
+      const lines = inputEl.value.split(/\r?\n/).map(i=>i.trim()).filter(i=>i!=='');
+      const seen = new Set();
+      const unique = lines.filter(i=>{ if(seen.has(i)) return false; seen.add(i); return true });
+      outputEl.value = unique.join('\n');
+      copyBtn.disabled = unique.length === 0;
+      save();
+    }
+    function copyOutput() {
+      const text = outputEl.value;
+      navigator.clipboard.writeText(text);
+    }
+    window.addEventListener('load', load);
+    inputEl.addEventListener('input', save);
+    dedupeBtn.addEventListener('click', dedupe);
+    copyBtn.addEventListener('click', copyOutput);
+  </script>
+</body>
+</html>
